@@ -32,7 +32,8 @@ class StudentTable:
                     "DELETE <id_number>": "delete student from the table",
                     "PRINT <id_number>": "print name of existing student",
                     "SAVE": "save changes in the table",
-                    "FILL": "import students from file"}
+                    "FILL": "import students from file",
+                    "PRINTALL": "print table"}
         print("STUDENT <options>")
         for func in commands.keys():
             print("{:<5}{:<20}{:<50}".format(" ", func, commands[func]))
@@ -144,6 +145,11 @@ class StudentTable:
         else:
             print("There is no student with id = {} in the table.".format(idn))
 
+    def printall(self, args):
+        print(" {:<7} {:<15} {:<15} {:<15}".format("id", "name", "surname", "patronymic"))
+        for i in self.table.keys():
+            print(" {:<7} {:<15} {:<15} {:<15}".format(i, self.table[i]["name"], self.table[i]["surname"],
+                                                      self.table[i]["patronymic"]))
     def autofill(self, args):
         if len(args) == 0:
             print("Enter absolute path to source file:")
@@ -153,7 +159,7 @@ class StudentTable:
             count = 0
             for i in f.readlines():
                 try:
-                    surname, name, patronymic = [j.strip() for j in i.rstrip('\n').split(' ')]
+                    surname, name, patronymic = [j.strip() for j in [k for k in i.rstrip('\n').split(' ') if k != '']]
                     if self.duplicateCheck([name, surname, patronymic]):
                         continue
                     idn = 1
