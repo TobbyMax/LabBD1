@@ -39,11 +39,11 @@ class DB:
         self.directions = {"STUDENT": {"ADD": self.stTable.add, "EDIT": self.stTable.edit,
                                        "DELETE": self.stTable.delete, "PRINT": self.stTable.print,
                                        "SAVE": self.stTable.save, "FILL": self.stTable.autofill,
-                                       "HELP": self.stTable.help},
+                                       "HELP": self.stTable.help, "PRINTALL": self.stTable.printall},
                            "VAR": {"ADD": self.varTable.add, "EDIT": self.varTable.edit,
                                    "DELETE": self.varTable.delete, "PRINT": self.varTable.print,
                                    "SAVE": self.varTable.save, "FILL": self.varTable.autofill,
-                                   "HELP": self.varTable.help},
+                                   "HELP": self.varTable.help, "PRINTALL": self.varTable.printall},
                            "TEST": {"GENERATE": self.generateTable, "PRINT": self.printGenerated},
                            "DB": {"CLOSE": self.quit, "SWITCH": self.quit, "RECOVER": self.recover,
                                   "BACKUP": self.backup, "SAVE": self.save,
@@ -58,14 +58,15 @@ class DB:
                                 "PRINT <id_number>": "print name of existing student",
                                 "SAVE": "save changes in the table",
                                 "FILL": "import students from file",
-                                "HELP": "show list of options"},
+                                "HELP": "show list of options",
+                                "PRINTALL": "print table"},
                     "VAR": {"ADD <variant name>": "add new variant to the table",
                             "EDIT <id_number>": "edit name of existing variant",
                             "DELETE <id_number>": "delete variant from the table",
                             "PRINT <id_number>": "print name of existing variant",
                             "SAVE": "save changes in the table",
                             "FILL": "import variants from file",
-                            "HELP": "show list of options"},
+                            "HELP": "show list of options", "PRINTALL": "print table"},
                     "TEST": {"GENERATE": "generate testing table", "PRINT": "print testing table"},
                     "DB": {"CLOSE": "close data base",
                            "SWITCH": "start working with new data base",
@@ -198,7 +199,7 @@ class DB:
         while not self.stopflag:
             try:
                 print()
-                obj, function, *args = input().split(' ')
+                obj, function, *args = [i for i in input().split(' ') if i != '']
                 obj, function = obj.upper(), function.upper()
                 try:
                     self.directions[obj][function](args)

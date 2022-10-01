@@ -1,5 +1,4 @@
 from students import checkargs
-
 class VariantTable:
     def __init__(self, mode, folderPath):
         self.fileName = folderPath + "\\varTable.txt"
@@ -111,6 +110,11 @@ class VariantTable:
             print('Row {} contains variant with name: {}'.format(idn, self.table[idn]))
         else:
             print("There is no variant with id = {} in the table.")
+
+    def printall(self, args):
+        print(" {:<7} {:<35}".format("id", "var_name"))
+        for i in self.table.keys():
+            print(" {:<7} {:<35}".format(i, self.table[i]))
 
     def autofill(self, args):
         if len(args) == 0:
