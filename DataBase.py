@@ -12,7 +12,7 @@ class DB:
         self.command = []
         while True:
             print("\nChoose:\nCREATE - Create new database\nOPEN - Open existing database\nLEAVE - Stop")
-            option = input().upper()
+            option, *args = input().upper().split(" ")
             if option == "OPEN":
                 print("Enter name of existing database:")
                 self.dbName = input().strip()
@@ -30,8 +30,10 @@ class DB:
                     break
                 except FileExistsError:
                     print("Database already exists.\n")
-            else:
+            elif option == "LEAVE":
                 exit()
+            else:
+                print("Wrong input. Try again.")
         self.stTable = StudentTable(option, self.folderPath)
         self.varTable = VariantTable(option, self.folderPath)
         self.directions = {"STUDENT": {"ADD": self.stTable.add, "EDIT": self.stTable.edit,

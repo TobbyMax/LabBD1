@@ -1,4 +1,5 @@
 /databases/
 /.idea/
+/__pycache__/
 names.txt
 vars.txt
