@@ -31,6 +31,17 @@ class StudentTable:
             f = open(self.fileName, "wt")
             f.close()
 
+    def help(self, args):
+        commands = {"ADD <name> [<surname>] [<patronymic>]": "add new student to the table",
+                    "EDIT <id_number>": "edit name of existing student",
+                    "DELETE <id_number>": "delete student from the table",
+                    "PRINT <id_number>": "print name of existing student",
+                    "SAVE": "save changes in the table",
+                    "FILL": "import students from file"}
+        print("STUDENT <options>")
+        for func in commands.keys():
+            print("{:<5}{:<20}{:<50}".format(" ", func, commands[func]))
+
     def recover(self):
         self.table.clear()
         f = open(self.fileName)
@@ -177,6 +188,20 @@ class VariantTable:
             print("New variant table created.")
             f = open(self.fileName, "wt")
             f.close()
+
+    def help(self, args):
+        commands = {"ADD <variant name>": "add new variant to the table",
+                    "EDIT <id_number>": "edit name of existing variant",
+                    "DELETE <id_number>": "delete variant from the table",
+                    "PRINT <id_number>": "print name of existing variant",
+                    "SAVE": "save changes in the table",
+                    "FILL": "import variants from file",
+                    "HELP": "show list of options"}
+        print("VAR <options>")
+        for func in commands.keys():
+            print("{:<5}{:<20}{:<50}".format(" ", func, commands[func]))
+        print()
+
     def recover(self):
         f = open(self.fileName)
         for i in f.readlines():
@@ -289,9 +314,10 @@ class VariantTable:
 class DB:
     def __init__(self):
         self.stopflag = 0
+        self.autoflag = 0
         self.command = []
         while True:
-            print("Choose:\nCREATE - Create new database\nOPEN - Open existing database\nLEAVE - Stop")
+            print("\nChoose:\nCREATE - Create new database\nOPEN - Open existing database\nLEAVE - Stop")
             option = input().upper()
             if option == "OPEN":
                 print("Enter name of existing database:")
@@ -316,16 +342,49 @@ class DB:
         self.varTable = VariantTable(option, self.folderPath)
         self.directions = {"STUDENT": {"ADD": self.stTable.add, "EDIT": self.stTable.edit,
                                        "DELETE": self.stTable.delete, "PRINT": self.stTable.print,
-                                       "SAVE": self.stTable.save, "FILL": self.stTable.autofill},
+                                       "SAVE": self.stTable.save, "FILL": self.stTable.autofill,
+                                       "HELP": self.stTable.help},
                            "VAR": {"ADD": self.varTable.add, "EDIT": self.varTable.edit,
                                    "DELETE": self.varTable.delete, "PRINT": self.varTable.print,
-                                   "SAVE": self.varTable.save, "FILL": self.varTable.autofill},
-                           "ALL": {"SAVE": self.save},
+                                   "SAVE": self.varTable.save, "FILL": self.varTable.autofill,
+                                   "HELP": self.varTable.help},
                            "TEST": {"GENERATE": self.generateTable, "PRINT": self.printGenerated},
-                           "DB": {"QUIT": self.quit, "RECOVER": self.recover, "BACKUP": self.backup, "SAVE": self.save}
+                           "DB": {"CLOSE": self.quit, "SWITCH": self.quit, "RECOVER": self.recover,
+                                  "BACKUP": self.backup, "SAVE": self.save,
+                                  "HELP": self.help, "AUTOSAVE": self.autosave},
                            }
 
+    def help(self, args):
+        print("List of commands:")
+        commands = {"STUDENT": {"ADD <name> [<surname>] [<patronymic>]": "add new student to the table",
+                                "EDIT <id_number>": "edit name of existing student",
+                                "DELETE <id_number>": "delete student from the table",
+                                "PRINT <id_number>": "print name of existing student",
+                                "SAVE": "save changes in the table",
+                                "FILL": "import students from file",
+                                "HELP": "show list of options"},
+                    "VAR": {"ADD <variant name>": "add new variant to the table",
+                            "EDIT <id_number>": "edit name of existing variant",
+                            "DELETE <id_number>": "delete variant from the table",
+                            "PRINT <id_number>": "print name of existing variant",
+                            "SAVE": "save changes in the table",
+                            "FILL": "import variants from file",
+                            "HELP": "show list of options"},
+                    "TEST": {"GENERATE": "generate testing table", "PRINT": "print testing table"},
+                    "DB": {"CLOSE": "close data base",
+                           "SWITCH": "start working with new data base",
+                           "RECOVER": "recover a database from back-up file",
+                           "BACKUP": "back-up changes", "SAVE": "save changes in the data base",
+                           "AUTOSAVE": "turn on/off autosave option"},
+                    }
+        for obj in commands.keys():
+            print(obj, " <options>")
+            for func in commands[obj].keys():
+                print("{:<5} {:<20} {:<50}".format("", func, commands[obj][func]))
+        print()
+
     def save(self, args):
+        print()
         self.stTable.save(args)
         self.varTable.save(args)
 
@@ -388,6 +447,14 @@ class DB:
         self.varTable.recover()
         print("Version {} recovered successfully".format(version))
 
+    def autosave(self, args):
+        if not self.autoflag:
+            self.autoflag = 1
+            print("AUTOSAVE is ON.")
+        else:
+            self.autoflag = 0
+            print("AUTOSAVE is OFF.")
+
     def generateTable(self, args):
         generatedName = self.folderPath + "\\testTable.txt"
         f = open(generatedName, "wt")
@@ -423,16 +490,23 @@ class DB:
             print("Table was not generated yet.")
 
     def run(self):
+        print("Enter DB HELP to see options.")
         while not self.stopflag:
             try:
-                function, obj, *args = input().split(' ')
-                function, obj = function.upper(), obj.upper()
+                print()
+                obj, function, *args = input().split(' ')
+                obj, function = obj.upper(), function.upper()
                 try:
                     self.directions[obj][function](args)
+                    if self.autoflag and (function == "ADD" or function == "EDIT"
+                                          or function == "DELETE" or function == "FILL"):
+                        self.save(args)
                 except KeyError:
                     print("Wrong input. Try again.")
+                    print("Enter DB HELP to see options.")
             except ValueError:
                 print("Not enough arguments given. Try again.")
+                print("Enter DB HELP to see options.")
 
 
 if __name__ == '__main__':
